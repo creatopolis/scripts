@@ -42,7 +42,7 @@ def list_files_all(path, ignore_files=[]):
       if pathname.split(".")[-1] not in ignore_files:
         files.append(os.path.abspath(pathname))
     else:
-      subfiles = list_files_all(pathname)
+      subfiles = list_files_all(pathname, ignore_files=ignore_files)
       for subfile in subfiles:
         files.append(os.path.abspath(subfile))
   return files
@@ -77,7 +77,7 @@ def main():
   Checks and removes backups that are too old.
   """
   config = get_config()
-  for f in list_files_all(config["backups_folder"], config["ignore_files"]):
+  for f in list_files_all(config["backups_folder"]):
     if should_remove_backup(f, config["keep_time"]):
       print "Removing %s" % f
       os.remove(f)
@@ -87,7 +87,8 @@ def main():
     full_backup_name = "%s/%s" % (config["backups_folder"], backup_name)
     with zipfile.ZipFile(full_backup_name, "w") as newzip:
       full_folder_path = "%s/%s" % (config["server_folder"], folder)
-      for filename in list_files_all(full_folder_path):
+      for filename in list_files_all(full_folder_path,
+                                     ignore_files=config["ignore_files"]):
         newzip.write(filename, filename[len(config["server_folder"]) + 1:])
     print "Successfully made %s" % backup_name
 
